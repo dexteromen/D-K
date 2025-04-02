@@ -15,6 +15,7 @@ var users = require('./routes/users');
 var pads = require('./routes/pads');
 var notes = require('./routes/notes');
 var settings = require('./settings');
+var async = require('async');
 
 var app = express();
 
@@ -38,10 +39,69 @@ app.use(express.static(path.join(__dirname, 'public')));
 var { Client } = require('pg');
 var db = new Client(settings.db);
 
+// db.connect(function(err) {
+//   if (err) throw err;
+//   console.log('Connected to PostgreSQL database');
+// });
 db.connect(function(err) {
   if (err) throw err;
   console.log('Connected to PostgreSQL database');
+
+  // Create Tables
+  createTables(function () {
+    console.log('Database tables are ready');
+  });
 });
+
+function createTables(next) {
+  async.series({
+    createUsers: function (callback) {
+      db.query(
+        `CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY NOT NULL,
+          email VARCHAR(75) NOT NULL,
+          password VARCHAR(128) NOT NULL
+        );`,
+        [],
+        function () {
+          callback(null);
+        }
+      );
+    },
+    createPads: function (callback) {
+      db.query(
+        `CREATE TABLE IF NOT EXISTS pads (
+          id SERIAL PRIMARY KEY NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          user_id INTEGER NOT NULL REFERENCES users(id)
+        );`,
+        [],
+        function () {
+          callback(null);
+        }
+      );
+    },
+    createNotes: function (callback) {
+      db.query(
+        `CREATE TABLE IF NOT EXISTS notes (
+          id SERIAL PRIMARY KEY NOT NULL,
+          pad_id INTEGER REFERENCES pads(id),
+          user_id INTEGER NOT NULL REFERENCES users(id),
+          name VARCHAR(100) NOT NULL,
+          text TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        );`,
+        [],
+        function () {
+          callback(null);
+        }
+      );
+    }
+  }, function (err, results) {
+    if (next) next();
+  });
+}
 
 orm.settings.set("instance.returnAllErrors", true);
 app.use(orm.express(settings.dsn, {
