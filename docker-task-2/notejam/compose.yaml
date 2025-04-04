@@ -1,12 +1,3 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
-
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
 services:
   server:
     build:
@@ -14,17 +5,15 @@ services:
     environment:
       NODE_ENV: development
     ports:
-      - 3000:3000
-
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker-compose up`.
+      - 3000:3000 #local:container
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - express-postgres
   db:
     image: postgres
     restart: always
@@ -36,16 +25,23 @@ services:
     environment:
       - POSTGRES_DB=notejam
       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    networks:
+      - express-postgres
     expose:
-      - 5432
+      - 5431 #to access on local machine localhost:5431 in postgres
+    ports:
+      - 5431:5432 #local:container
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
+networks:
+    express-postgres:
+      name: notejam-app-express-postgres
+      driver: bridge
 volumes:
   db-data:
 secrets:
   db-password:
     file: db/password.txt
-
