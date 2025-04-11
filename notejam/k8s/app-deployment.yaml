@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notejam-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notejam-app
+  template:
+    metadata:
+      labels:
+        app: notejam-app
+    spec:
+      containers:
+      - name: notejam-app
+        image: dexteromen/notejam-app:latest 
+        ports:
+        - containerPort: 4000
+        
+        # these are the environment variables
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: notejam-config
+              key: NODE_ENV
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: notejam-config
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: notejam-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: notejam-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: notejam-secret
+              key: DB_NAME
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: notejam-secret
+              key: DB_PORT
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        volumeMounts:
+        - mountPath: /app/uploads
+          name: appdata-volume
+      volumes:
+      - name: appdata-volume
+        emptyDir: {}

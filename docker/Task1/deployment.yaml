@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xenonstack-deployment
+  labels:
+    app: xenonstack
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: xenonstack
+  template:
+    metadata:
+      labels:
+        app: xenonstack
+    spec:
+      containers:
+      - name: xenonstack-container
+        image: varunverma823/xenonstack:latest
+        ports:
+        - containerPort: 80
