@@ -11,3 +11,6 @@ spec:
       targetPort: 4000
       nodePort: 30727 
   type: NodePort
+
+#Exposes the notejam-app pods internally 
+#and externally (via NodePort) so they can receive traffic.

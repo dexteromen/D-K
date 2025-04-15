@@ -1,18 +1,18 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: Deployment #Specifies this is a Kubernetes Deployment resource.
 metadata:
-  name: notejam-app
+  name: notejam-app #Names the Deployment.
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: notejam-app
-  template:
-    metadata:
+      app: notejam-app # Links the Deployment to pods with the label
+  template: #Defines the pod template
+    metadata: 
       labels:
-        app: notejam-app
+        app: notejam-app # Labels pods for identification.
     spec:
-      containers:
+      containers: #Defines the container(s) in each pod.
       - name: notejam-app
         image: dexteromen/notejam-app:latest 
         ports:
@@ -51,15 +51,15 @@ spec:
               name: notejam-secret
               key: DB_PORT
         resources:
-          requests:
+          requests: #Minimum resources (128Mi memory, 250m CPU = 0.25 cores).
             memory: "128Mi"
             cpu: "250m"
-          limits:
+          limits: # Maximum resources (256Mi memory, 500m CPU = 0.5 cores).
             memory: "256Mi"
             cpu: "500m"
-        volumeMounts:
-        - mountPath: /app/uploads
+        volumeMounts: #Mounts a volume at /app/uploads for storing uploaded files
+        - mountPath: /app/uploads 
           name: appdata-volume
-      volumes:
+      volumes: #Defines a volume for the container.
       - name: appdata-volume
-        emptyDir: {}
+        emptyDir: {} #Creates a temporary, pod-specific storage (data is lost when the pod restarts).

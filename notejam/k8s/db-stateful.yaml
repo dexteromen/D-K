@@ -1,14 +1,21 @@
+# Deploys a single PostgreSQL instance 
+# with stable network identity and persistent storage, 
+# suitable for stateful applications like databases.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: notejam-db
 spec:
-  serviceName: "notejam-db"
-  replicas: 1
-  selector:
+  # Links to the notejam-db Service for stable DNS naming
+  serviceName: "notejam-db" 
+  # Runs one database pod.
+  replicas: 1 
+  # Matches pods with the label
+  selector: 
     matchLabels:
       app: notejam-db
-  template:
+  # Defines the pod template
+  template: 
     metadata:
       labels:
         app: notejam-db
@@ -25,10 +32,13 @@ spec:
           value: "password"
         - name: POSTGRES_DB
           value: "notejam"
-        volumeMounts:
+        # Mounts persistent storage for database data.
+        volumeMounts: 
         - mountPath: /var/lib/postgresql/data
           name: postgres-pvc
-      volumes:
-      - name: postgres-pvc
-        persistentVolumeClaim:
+      # Defines the volume to be used by the database pod
+      volumes: 
+      - name: postgres-pvc 
+        # References the PVC for persistent storage
+        persistentVolumeClaim: 
           claimName: postgres-pvc
